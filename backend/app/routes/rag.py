@@ -29,6 +29,14 @@ class SearchCriteriaRequest(BaseModel):
     health_condition: Optional[str] = None
     limit: int = 10
 
+class ResourceAllocationRequest(BaseModel):
+    resource_name: str
+    available_quantity: int
+    resource_description: str
+    eligibility_criteria: str
+    priority_weights: Dict[str, float]
+    additional_filters: Optional[Dict[str, Any]] = None
+
 rag_service = RAGService()
 doc_processor = DocumentProcessor()
 
@@ -134,6 +142,21 @@ async def search_by_criteria(request: SearchCriteriaRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching by criteria: {str(e)}")
+
+@router.post("/query-resource-allocation", response_model=QueryResponse, summary="Query for resource allocation recommendations")
+async def query_resource_allocation(request: ResourceAllocationRequest):
+    try:
+        result = rag_service.query_resource_allocation(
+            resource_name=request.resource_name,
+            available_quantity=request.available_quantity,
+            resource_description=request.resource_description,
+            eligibility_criteria=request.eligibility_criteria,
+            priority_weights=request.priority_weights,
+            additional_filters=request.additional_filters
+        )
+        return QueryResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing resource allocation request: {str(e)}")
 
 @router.get("/profiles", summary="Get all personal profiles from vector store")
 async def get_all_profiles(
