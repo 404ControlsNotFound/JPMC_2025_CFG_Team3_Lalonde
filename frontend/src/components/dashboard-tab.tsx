@@ -1,11 +1,11 @@
 import { useState } from "react";
-import * as XLSX from "xlsx";
 
+import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   ChevronDown,
-  ChevronUp,
   ChevronsUpDown,
+  ChevronUp,
   DollarSign,
   Eye,
   Filter,
@@ -14,6 +14,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -318,11 +319,16 @@ export function DashboardTab() {
     const num = parseInt(amount, 10);
 
     switch (unit) {
-      case 'minute': return num;
-      case 'hour': return num * 60;
-      case 'day': return num * 24 * 60;
-      case 'week': return num * 7 * 24 * 60;
-      default: return 0;
+      case "minute":
+        return num;
+      case "hour":
+        return num * 60;
+      case "day":
+        return num * 24 * 60;
+      case "week":
+        return num * 7 * 24 * 60;
+      default:
+        return 0;
     }
   };
 
@@ -391,10 +397,11 @@ export function DashboardTab() {
         filters.welfareStatus === "all" ||
         tenant.welfareStatus === filters.welfareStatus;
       const matchesEngagement =
-        filters.engagement === "all" || tenant.engagement === filters.engagement;
+        filters.engagement === "all" ||
+        tenant.engagement === filters.engagement;
 
       return matchesSearch && matchesWelfare && matchesEngagement;
-    })
+    }),
   );
 
   const handleSelectResident = (residentId: number) => {
@@ -409,7 +416,7 @@ export function DashboardTab() {
   const SortableTableHead = ({
     children,
     sortKey,
-    className = ""
+    className = "",
   }: {
     children: React.ReactNode;
     sortKey: string;
@@ -449,7 +456,11 @@ export function DashboardTab() {
 
   // Helper function to check if filters are active
   const hasActiveFilters = () => {
-    return filters.welfareStatus !== "all" || filters.engagement !== "all" || searchTerm.trim() !== "";
+    return (
+      filters.welfareStatus !== "all" ||
+      filters.engagement !== "all" ||
+      searchTerm.trim() !== ""
+    );
   };
 
   // Helper function to clear all filters
@@ -471,16 +482,16 @@ export function DashboardTab() {
   const handleExportToExcel = () => {
     // Prepare data for export (using filtered data)
     const exportData = filteredTenants.map((tenant) => ({
-      "Name": tenant.name,
-      "Room": tenant.room,
-      "Age": tenant.age,
+      Name: tenant.name,
+      Room: tenant.room,
+      Age: tenant.age,
       "Welfare Status": tenant.welfareStatus,
       "Engagement Level": tenant.engagement,
       "Last Interaction": tenant.lastInteraction,
       "Resources Received": tenant.resourcesReceived,
       "Events Attended": tenant.eventsAttended,
       "Move-in Date": tenant.moveInDate || "N/A",
-      "Demographics": tenant.demographics || "N/A"
+      Demographics: tenant.demographics || "N/A",
     }));
 
     // Create workbook and worksheet
@@ -491,7 +502,7 @@ export function DashboardTab() {
     const columnWidths = [
       { wch: 20 }, // Name
       { wch: 10 }, // Room
-      { wch: 6 },  // Age
+      { wch: 6 }, // Age
       { wch: 15 }, // Welfare Status
       { wch: 15 }, // Engagement Level
       { wch: 18 }, // Last Interaction
@@ -500,13 +511,13 @@ export function DashboardTab() {
       { wch: 12 }, // Move-in Date
       { wch: 15 }, // Demographics
     ];
-    worksheet['!cols'] = columnWidths;
+    worksheet["!cols"] = columnWidths;
 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, "Residents");
 
     // Generate filename with timestamp
-    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const timestamp = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
     const filename = `residents-export-${timestamp}.xlsx`;
 
     // Save file
@@ -597,12 +608,12 @@ export function DashboardTab() {
                   placeholder="Search residents by name or room..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`pl-10 pr-4 ${hasActiveFilters() ? 'ring-2 ring-blue-100 border-blue-300' : ''}`}
+                  className={`pr-4 pl-10 ${hasActiveFilters() ? "border-blue-300 ring-2 ring-blue-100" : ""}`}
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                    className="absolute top-2.5 right-2 text-gray-400 hover:text-gray-600"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -612,8 +623,12 @@ export function DashboardTab() {
               {/* Active Filter Indicator */}
               {hasActiveFilters() && (
                 <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                    {getActiveFilterCount()} filter{getActiveFilterCount() > 1 ? 's' : ''} active
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700"
+                  >
+                    {getActiveFilterCount()} filter
+                    {getActiveFilterCount() > 1 ? "s" : ""} active
                   </Badge>
                   <Button
                     variant="ghost"
@@ -643,7 +658,9 @@ export function DashboardTab() {
                   }))
                 }
               >
-                <SelectTrigger className={`w-36 h-9 ${filters.welfareStatus !== "all" ? 'ring-2 ring-blue-100 border-blue-300 bg-blue-50' : ''}`}>
+                <SelectTrigger
+                  className={`h-9 w-36 ${filters.welfareStatus !== "all" ? "border-blue-300 bg-blue-50 ring-2 ring-blue-100" : ""}`}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -663,7 +680,9 @@ export function DashboardTab() {
                   }))
                 }
               >
-                <SelectTrigger className={`w-36 h-9 ${filters.engagement !== "all" ? 'ring-2 ring-blue-100 border-blue-300 bg-blue-50' : ''}`}>
+                <SelectTrigger
+                  className={`h-9 w-36 ${filters.engagement !== "all" ? "border-blue-300 bg-blue-50 ring-2 ring-blue-100" : ""}`}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -707,11 +726,21 @@ export function DashboardTab() {
                 </TableHead>
                 <SortableTableHead sortKey="name">Name</SortableTableHead>
                 <SortableTableHead sortKey="room">Room</SortableTableHead>
-                <SortableTableHead sortKey="welfareStatus">Welfare Status</SortableTableHead>
-                <SortableTableHead sortKey="engagement">Engagement</SortableTableHead>
-                <SortableTableHead sortKey="lastInteraction">Last Interaction</SortableTableHead>
-                <SortableTableHead sortKey="resourcesReceived">Resources</SortableTableHead>
-                <SortableTableHead sortKey="eventsAttended">Events</SortableTableHead>
+                <SortableTableHead sortKey="welfareStatus">
+                  Welfare Status
+                </SortableTableHead>
+                <SortableTableHead sortKey="engagement">
+                  Engagement
+                </SortableTableHead>
+                <SortableTableHead sortKey="lastInteraction">
+                  Last Interaction
+                </SortableTableHead>
+                <SortableTableHead sortKey="resourcesReceived">
+                  Resources
+                </SortableTableHead>
+                <SortableTableHead sortKey="eventsAttended">
+                  Events
+                </SortableTableHead>
                 <TableHead className="w-12">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -904,6 +933,12 @@ export function DashboardTab() {
                         )}
                       </CardContent>
                     </Card>
+                  </div>
+
+                  <div>
+                    <Link to="/tenant">
+                      <Button>More Details</Button>
+                    </Link>
                   </div>
                 </div>
               )}
