@@ -13,8 +13,18 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DemoRouteImport } from './routes/demo'
 
+const ResourceAllocationLazyRouteImport = createFileRoute(
+  '/resource-allocation',
+)()
 const IndexLazyRouteImport = createFileRoute('/')()
 
+const ResourceAllocationLazyRoute = ResourceAllocationLazyRouteImport.update({
+  id: '/resource-allocation',
+  path: '/resource-allocation',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/resource-allocation.lazy').then((d) => d.Route),
+)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -29,31 +39,42 @@ const IndexLazyRoute = IndexLazyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/demo': typeof DemoRoute
+  '/resource-allocation': typeof ResourceAllocationLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/demo': typeof DemoRoute
+  '/resource-allocation': typeof ResourceAllocationLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
   '/demo': typeof DemoRoute
+  '/resource-allocation': typeof ResourceAllocationLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo'
+  fullPaths: '/' | '/demo' | '/resource-allocation'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo'
-  id: '__root__' | '/' | '/demo'
+  to: '/' | '/demo' | '/resource-allocation'
+  id: '__root__' | '/' | '/demo' | '/resource-allocation'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   DemoRoute: typeof DemoRoute
+  ResourceAllocationLazyRoute: typeof ResourceAllocationLazyRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/resource-allocation': {
+      id: '/resource-allocation'
+      path: '/resource-allocation'
+      fullPath: '/resource-allocation'
+      preLoaderRoute: typeof ResourceAllocationLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo': {
       id: '/demo'
       path: '/demo'
@@ -74,6 +95,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   DemoRoute: DemoRoute,
+  ResourceAllocationLazyRoute: ResourceAllocationLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

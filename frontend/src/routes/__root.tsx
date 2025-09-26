@@ -33,7 +33,13 @@ export const Route = createRootRouteWithContext<{
           className="transition-colors hover:text-blue-200 [&.active]:font-bold"
         >
           Demo
-        </Link> */}
+        </Link>
+        <Link
+          to="/resource-allocation"
+          className="transition-colors hover:text-blue-200 [&.active]:font-bold"
+        >
+          Resource Allocation
+        </Link>
       </div>
       <main className="h-[calc(100vh-60px)] w-screen bg-gray-900 text-white">
         <Outlet />
