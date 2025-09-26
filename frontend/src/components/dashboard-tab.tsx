@@ -18,6 +18,7 @@ import * as XLSX from "xlsx";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -93,21 +94,21 @@ const mockTenants: Tenant[] = [
     moveInDate: "2023-03-15",
     demographics: "Chinese",
     resourceHistory: [
-      { type: "Food", date: "2024-01-12", description: "Weekly groceries" },
+      { type: "Food", date: "2025-09-12", description: "Weekly groceries" },
       {
         type: "Medical",
-        date: "2024-01-08",
+        date: "2025-09-08",
         description: "Blood pressure medication",
       },
     ],
     caseNotes: [
       {
-        date: "2024-01-14",
+        date: "2025-09-14",
         note: "Regular check-in, health is stable",
         staff: "Sarah Wong",
       },
       {
-        date: "2024-01-10",
+        date: "2025-09-10",
         note: "Attended community lunch event",
         staff: "David Tan",
       },
@@ -128,19 +129,19 @@ const mockTenants: Tenant[] = [
     resourceHistory: [
       {
         type: "Clothing",
-        date: "2024-01-11",
+        date: "2025-09-11",
         description: "Professional attire for interviews",
       },
-      { type: "Food", date: "2024-01-07", description: "Halal meal package" },
+      { type: "Food", date: "2025-09-07", description: "Halal meal package" },
     ],
     caseNotes: [
       {
-        date: "2024-01-09",
+        date: "2025-09-09",
         note: "Looking for employment opportunities",
         staff: "James Lim",
       },
       {
-        date: "2024-01-05",
+        date: "2025-09-05",
         note: "Attended job skills workshop",
         staff: "Career Counselor",
       },
@@ -300,6 +301,45 @@ export function DashboardTab() {
     key: string | null;
     direction: "asc" | "desc";
   }>({ key: null, direction: "asc" });
+  const [date, setDate] = useState<Date | undefined>(new Date());
+
+  const getResidentActivityDates = (resident: Tenant): Date[] => {
+    const activityDates: Date[] = [];
+
+    // Add dates from resource history
+    resident.resourceHistory?.forEach((resource) => {
+      try {
+        const resourceDate = new Date(resource.date);
+        activityDates.push(resourceDate);
+        console.log(
+          `Added resource date: ${resource.date} -> ${resourceDate.toDateString()}`,
+        );
+      } catch (_e) {
+        console.warn("Invalid date in resource history:", resource.date);
+      }
+    });
+
+    // Add dates from case notes
+    resident.caseNotes?.forEach((note) => {
+      try {
+        const noteDate = new Date(note.date);
+        activityDates.push(noteDate);
+        console.log(
+          `Added case note date: ${note.date} -> ${noteDate.toDateString()}`,
+        );
+      } catch (_e) {
+        console.warn("Invalid date in case notes:", note.date);
+      }
+    });
+
+    const validDates = activityDates.filter((date) => !isNaN(date.getTime()));
+    console.log(
+      `Total activity dates for ${resident.name}:`,
+      validDates.length,
+      validDates.map((d) => d.toDateString()),
+    );
+    return validDates;
+  };
 
   // Handle sorting
   const handleSort = (key: string) => {
@@ -811,14 +851,14 @@ export function DashboardTab() {
             open={!!selectedResident}
             onOpenChange={() => setSelectedResident(null)}
           >
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
+            <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
+              <DialogHeader className="sticky top-0 z-10 bg-white pb-4">
                 <DialogTitle>
                   {selectedResident?.name} - Room {selectedResident?.room}
                 </DialogTitle>
               </DialogHeader>
               {selectedResident && (
-                <div className="space-y-4">
+                <div className="space-y-4 px-1 pb-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">
@@ -934,6 +974,51 @@ export function DashboardTab() {
                       </CardContent>
                     </Card>
                   </div>
+
+                  {/* Activity Calendar Card */}
+                  <Card className="mt-4">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">
+                        Activity Calendar
+                      </CardTitle>
+                      <CardDescription>
+                        Shows resource allocation and interaction dates. Blue
+                        dots indicate activity.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-center">
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          className="rounded-md border"
+                          modifiers={{
+                            activity:
+                              getResidentActivityDates(selectedResident),
+                          }}
+                          modifiersClassNames={{
+                            activity:
+                              "bg-blue-100 text-blue-900 font-semibold hover:bg-blue-200",
+                          }}
+                        />
+                      </div>
+
+                      {/* Activity Legend */}
+                      <div className="mt-4 text-xs text-gray-600">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-1">
+                            <div className="h-3 w-3 rounded border bg-blue-100"></div>
+                            <span>Activity Date</span>
+                          </div>
+                          <div className="text-gray-500">
+                            Total Activities:{" "}
+                            {getResidentActivityDates(selectedResident).length}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   <div>
                     <Link to="/tenant">
