@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 origins = [
-    "http://localhost:3000",
+    "http://localhost:5173",
 ]
 
 api_router = APIRouter()
