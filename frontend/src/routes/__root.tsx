@@ -32,7 +32,7 @@ export const Route = createRootRouteWithContext<{
         <SideNavigation />
 
         {/* Logo */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           <Link to={"/"}>
             <NewHopeIcon size={60} />
           </Link>

@@ -114,48 +114,6 @@ function TenantPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl">Item Receipt Heatmap (July 2025)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Each square represents a day in July 2025. Darker squares indicate days with more items received.
-              </p>
-
-              <div className="overflow-x-auto">
-                <CalendarHeatmap
-                  month={new Date(2025, 6)} // ✅ July (0-indexed)
-                  variantClassnames={[
-                    "text-white bg-green-400 hover:bg-green-400", // Light
-                    "text-white bg-green-500 hover:bg-green-500", // Mid
-                    "text-white bg-green-700 hover:bg-green-700", // Dark
-                  ]}
-                  datesPerVariant={[
-                    [new Date("2025-07-02"), new Date("2025-07-05"), new Date("2025-07-12")],
-                    [new Date("2025-07-15"), new Date("2025-07-18"), new Date("2025-07-24")],
-                    [new Date("2025-07-21"), new Date("2025-07-28")],
-                  ]}
-                />
-              </div>
-
-              {/* Legend */}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Less</span>
-                <div className="flex items-center gap-1">
-                  {[0, 1, 2, 3, 4].map((lvl) => (
-                    <span
-                      key={lvl}
-                      className="h-3 w-3 rounded-sm"
-                      style={{ backgroundColor: (PANEL_COLORS as any)[lvl] }}
-                    />
-                  ))}
-                </div>
-                <span>More</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-4">
               <CardTitle className="text-xl">Support Log (Items given previously)</CardTitle>
             </CardHeader>
             <CardContent>
