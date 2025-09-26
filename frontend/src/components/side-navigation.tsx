@@ -1,15 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Menu, X, Home, UserPlus, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface NavigationItem {
   name: string;
@@ -43,22 +36,71 @@ export function SideNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
+  // Close navigation when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const nav = document.getElementById('slide-navigation');
+      const button = document.getElementById('nav-button');
+      if (
+        isOpen &&
+        nav &&
+        button &&
+        !nav.contains(event.target as Node) &&
+        !button.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-white hover:bg-blue-700 hover:text-white"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Open navigation menu</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[400px] p-0">
-        <DialogHeader className="bg-blue-800 text-white p-6">
-          <DialogTitle className="flex items-center justify-between">
-            Navigation Menu
+    <>
+      {/* Menu Button */}
+      <Button
+        id="nav-button"
+        variant="ghost"
+        size="sm"
+        className="text-white hover:bg-blue-700 hover:text-white"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Menu className="h-5 w-5" />
+        <span className="sr-only">Toggle navigation menu</span>
+      </Button>
+
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+          isOpen ? "opacity-50" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* Slide-in Navigation Panel */}
+      <div
+        id="slide-navigation"
+        className={`fixed top-0 left-0 h-full w-80 max-w-[90vw] sm:w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div className="bg-blue-800 text-white p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Navigation Menu</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -67,9 +109,11 @@ export function SideNavigation() {
             >
               <X className="h-4 w-4" />
             </Button>
-          </DialogTitle>
-        </DialogHeader>
-        <div className="p-6">
+          </div>
+        </div>
+
+        {/* Navigation Items */}
+        <div className="p-6 overflow-y-auto h-full">
           <nav className="space-y-3">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.href;
@@ -106,7 +150,7 @@ export function SideNavigation() {
             })}
           </nav>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   );
 }

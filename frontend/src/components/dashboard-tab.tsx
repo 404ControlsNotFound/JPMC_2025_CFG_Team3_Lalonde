@@ -1,13 +1,18 @@
 import { useState } from "react";
+import * as XLSX from "xlsx";
 
 import {
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
   DollarSign,
   Eye,
   Filter,
   Search,
   TrendingUp,
   Users,
+  X,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -285,26 +290,112 @@ const mockTenants: Tenant[] = [
 export function DashboardTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedResident, setSelectedResident] = useState<Tenant | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedResidents, setSelectedResidents] = useState<number[]>([]);
   const [filters, setFilters] = useState({
     welfareStatus: "all",
     engagement: "all",
   });
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null;
+    direction: "asc" | "desc";
+  }>({ key: null, direction: "asc" });
 
-  // Filter tenants based on search and filters
-  const filteredTenants = mockTenants.filter((tenant) => {
-    const matchesSearch =
-      tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.room.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesWelfare =
-      filters.welfareStatus === "all" ||
-      tenant.welfareStatus === filters.welfareStatus;
-    const matchesEngagement =
-      filters.engagement === "all" || tenant.engagement === filters.engagement;
+  // Handle sorting
+  const handleSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
-    return matchesSearch && matchesWelfare && matchesEngagement;
-  });
+  // Helper function to parse relative time for sorting
+  const parseRelativeTime = (timeStr: string): number => {
+    const match = timeStr.match(/(\d+)\s*(day|week|hour|minute)s?\s*ago/);
+    if (!match) return 0;
+
+    const [, amount, unit] = match;
+    const num = parseInt(amount, 10);
+
+    switch (unit) {
+      case 'minute': return num;
+      case 'hour': return num * 60;
+      case 'day': return num * 24 * 60;
+      case 'week': return num * 7 * 24 * 60;
+      default: return 0;
+    }
+  };
+
+  // Sort tenants function
+  const sortTenants = (tenants: Tenant[]) => {
+    if (!sortConfig.key) return tenants;
+
+    return [...tenants].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortConfig.key) {
+        case "name":
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case "room":
+          aValue = a.room.toLowerCase();
+          bValue = b.room.toLowerCase();
+          break;
+        case "welfareStatus":
+          // Custom order: critical (0) -> fair (1) -> good (2)
+          const welfareOrder = { critical: 0, fair: 1, good: 2 };
+          aValue = welfareOrder[a.welfareStatus];
+          bValue = welfareOrder[b.welfareStatus];
+          break;
+        case "engagement":
+          // Custom order: low (0) -> medium (1) -> high (2)
+          const engagementOrder = { low: 0, medium: 1, high: 2 };
+          aValue = engagementOrder[a.engagement];
+          bValue = engagementOrder[b.engagement];
+          break;
+        case "lastInteraction":
+          aValue = parseRelativeTime(a.lastInteraction);
+          bValue = parseRelativeTime(b.lastInteraction);
+          break;
+        case "resourcesReceived":
+          aValue = a.resourcesReceived;
+          bValue = b.resourcesReceived;
+          break;
+        case "eventsAttended":
+          aValue = a.eventsAttended;
+          bValue = b.eventsAttended;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
+  // Filter and sort tenants based on search, filters, and sorting
+  const filteredTenants = sortTenants(
+    mockTenants.filter((tenant) => {
+      const matchesSearch =
+        tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant.room.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesWelfare =
+        filters.welfareStatus === "all" ||
+        tenant.welfareStatus === filters.welfareStatus;
+      const matchesEngagement =
+        filters.engagement === "all" || tenant.engagement === filters.engagement;
+
+      return matchesSearch && matchesWelfare && matchesEngagement;
+    })
+  );
 
   const handleSelectResident = (residentId: number) => {
     setSelectedResidents((prev) =>
@@ -314,12 +405,112 @@ export function DashboardTab() {
     );
   };
 
+  // Helper component for sortable table headers
+  const SortableTableHead = ({
+    children,
+    sortKey,
+    className = ""
+  }: {
+    children: React.ReactNode;
+    sortKey: string;
+    className?: string;
+  }) => {
+    const getSortIcon = () => {
+      if (sortConfig.key !== sortKey) {
+        return <ChevronsUpDown className="ml-1 h-3 w-3 text-gray-400" />;
+      }
+      return sortConfig.direction === "asc" ? (
+        <ChevronUp className="ml-1 h-3 w-3 text-blue-600" />
+      ) : (
+        <ChevronDown className="ml-1 h-3 w-3 text-blue-600" />
+      );
+    };
+
+    return (
+      <TableHead
+        className={`cursor-pointer select-none hover:bg-gray-50 ${className}`}
+        onClick={() => handleSort(sortKey)}
+      >
+        <div className="flex items-center">
+          {children}
+          {getSortIcon()}
+        </div>
+      </TableHead>
+    );
+  };
+
   const handleSelectAll = () => {
     if (selectedResidents.length === filteredTenants.length) {
       setSelectedResidents([]);
     } else {
       setSelectedResidents(filteredTenants.map((r) => r.id));
     }
+  };
+
+  // Helper function to check if filters are active
+  const hasActiveFilters = () => {
+    return filters.welfareStatus !== "all" || filters.engagement !== "all" || searchTerm.trim() !== "";
+  };
+
+  // Helper function to clear all filters
+  const clearAllFilters = () => {
+    setFilters({ welfareStatus: "all", engagement: "all" });
+    setSearchTerm("");
+  };
+
+  // Helper function to get active filter count
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.welfareStatus !== "all") count++;
+    if (filters.engagement !== "all") count++;
+    if (searchTerm.trim() !== "") count++;
+    return count;
+  };
+
+  // Excel export function
+  const handleExportToExcel = () => {
+    // Prepare data for export (using filtered data)
+    const exportData = filteredTenants.map((tenant) => ({
+      "Name": tenant.name,
+      "Room": tenant.room,
+      "Age": tenant.age,
+      "Welfare Status": tenant.welfareStatus,
+      "Engagement Level": tenant.engagement,
+      "Last Interaction": tenant.lastInteraction,
+      "Resources Received": tenant.resourcesReceived,
+      "Events Attended": tenant.eventsAttended,
+      "Move-in Date": tenant.moveInDate || "N/A",
+      "Demographics": tenant.demographics || "N/A"
+    }));
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Set column widths for better formatting
+    const columnWidths = [
+      { wch: 20 }, // Name
+      { wch: 10 }, // Room
+      { wch: 6 },  // Age
+      { wch: 15 }, // Welfare Status
+      { wch: 15 }, // Engagement Level
+      { wch: 18 }, // Last Interaction
+      { wch: 12 }, // Resources Received
+      { wch: 12 }, // Events Attended
+      { wch: 12 }, // Move-in Date
+      { wch: 15 }, // Demographics
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Residents");
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const filename = `residents-export-${timestamp}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(workbook, filename);
   };
 
   return (
@@ -387,74 +578,102 @@ export function DashboardTab() {
                 Monitor resident welfare status and engagement patterns
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Filters
-              </Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                Export Data
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={handleExportToExcel}
+            >
+              Export Data
+            </Button>
           </div>
 
           {/* Search and Filters */}
-          <div className="mt-4 flex items-center space-x-4">
-            <div className="relative flex-1">
-              <Search className="absolute top-2.5 left-2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search residents by name or room..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            {showFilters && (
-              <div className="flex items-center space-x-2">
-                <Select
-                  value={filters.welfareStatus}
-                  onValueChange={(value) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      welfareStatus: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Welfare Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={filters.engagement}
-                  onValueChange={(value) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      engagement: value,
-                    }))
-                  }
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Engagement Level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Levels</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="mt-4 space-y-3">
+            {/* Search Bar with Active Filter Indicator */}
+            <div className="flex items-center space-x-3">
+              <div className="relative flex-1">
+                <Search className="absolute top-2.5 left-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search residents by name or room..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`pl-10 pr-4 ${hasActiveFilters() ? 'ring-2 ring-blue-100 border-blue-300' : ''}`}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-            )}
+
+              {/* Active Filter Indicator */}
+              {hasActiveFilters() && (
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    {getActiveFilterCount()} filter{getActiveFilterCount() > 1 ? 's' : ''} active
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Filter className="h-4 w-4" />
+                <span>Filter by:</span>
+              </div>
+
+              <Select
+                value={filters.welfareStatus}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    welfareStatus: value,
+                  }))
+                }
+              >
+                <SelectTrigger className={`w-36 h-9 ${filters.welfareStatus !== "all" ? 'ring-2 ring-blue-100 border-blue-300 bg-blue-50' : ''}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="good">Good</SelectItem>
+                  <SelectItem value="fair">Fair</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.engagement}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    engagement: value,
+                  }))
+                }
+              >
+                <SelectTrigger className={`w-36 h-9 ${filters.engagement !== "all" ? 'ring-2 ring-blue-100 border-blue-300 bg-blue-50' : ''}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -486,13 +705,13 @@ export function DashboardTab() {
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Room</TableHead>
-                <TableHead>Welfare Status</TableHead>
-                <TableHead>Engagement</TableHead>
-                <TableHead>Last Interaction</TableHead>
-                <TableHead>Resources</TableHead>
-                <TableHead>Events</TableHead>
+                <SortableTableHead sortKey="name">Name</SortableTableHead>
+                <SortableTableHead sortKey="room">Room</SortableTableHead>
+                <SortableTableHead sortKey="welfareStatus">Welfare Status</SortableTableHead>
+                <SortableTableHead sortKey="engagement">Engagement</SortableTableHead>
+                <SortableTableHead sortKey="lastInteraction">Last Interaction</SortableTableHead>
+                <SortableTableHead sortKey="resourcesReceived">Resources</SortableTableHead>
+                <SortableTableHead sortKey="eventsAttended">Events</SortableTableHead>
                 <TableHead className="w-12">Actions</TableHead>
               </TableRow>
             </TableHeader>
