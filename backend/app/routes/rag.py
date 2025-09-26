@@ -135,6 +135,33 @@ async def search_by_criteria(request: SearchCriteriaRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching by criteria: {str(e)}")
 
+@router.get("/profiles", summary="Get all personal profiles from vector store")
+async def get_all_profiles(
+    limit: Optional[int] = None,
+    offset: int = 0,
+    industry: Optional[str] = None,
+    location: Optional[str] = None
+):
+    try:
+        result = doc_processor.get_all_profiles(limit=limit, offset=offset)
+
+        # Apply additional filtering if specified
+        if industry or location:
+            filtered_profiles = []
+            for profile in result["profiles"]:
+                if industry and profile["professional"]["industry"].lower() != industry.lower():
+                    continue
+                if location and location.lower() not in profile["demographics"]["location"].lower():
+                    continue
+                filtered_profiles.append(profile)
+
+            result["profiles"] = filtered_profiles
+            result["count"] = len(filtered_profiles)
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving profiles: {str(e)}")
+
 @router.get("/health", summary="Health check for RAG service")
 async def health_check():
     return {"status": "healthy", "service": "RAG", "data_type": "personal_profiles"}

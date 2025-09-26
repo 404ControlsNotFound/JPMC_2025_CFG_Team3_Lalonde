@@ -1,6 +1,7 @@
 import os
+import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
@@ -159,3 +160,77 @@ class DocumentProcessor:
         search_query = " ".join(query_parts) if query_parts else "personal profile"
 
         return self.vector_store.similarity_search(search_query, k=k)
+
+    def get_all_profiles(self, limit: Optional[int] = None, offset: int = 0) -> Dict[str, Any]:
+        """Get all personal profiles from the vector store in a frontend-friendly format"""
+        try:
+            if self.vector_store is None:
+                self.vector_store = get_vector_store()
+
+            # Get all documents by doing a broad search
+            # We'll retrieve more than we might need initially to get all data
+            max_search = limit + offset if limit else 1000
+            all_docs = self.vector_store.similarity_search("personal profile", k=max_search)
+
+            # Filter only synthetic personal profiles
+            profile_docs = [doc for doc in all_docs if doc.metadata.get("data_type") == "synthetic_personal_profile"]
+
+            # Apply pagination
+            if offset > 0:
+                profile_docs = profile_docs[offset:]
+            if limit:
+                profile_docs = profile_docs[:limit]
+
+            # Convert to frontend-friendly format
+            formatted_profiles = []
+            for doc in profile_docs:
+                try:
+                    # Parse JSON fields
+                    health_conditions = json.loads(doc.metadata.get("health_conditions", "[]"))
+                    lifestyle_factors = json.loads(doc.metadata.get("lifestyle_factors", "[]"))
+                    hobbies = json.loads(doc.metadata.get("hobbies", "[]"))
+
+                    profile = {
+                        "name": doc.metadata.get("person_id", "unknown").replace("_", " ").title(),
+                        "demographics": {
+                            "age": doc.metadata.get("age"),
+                            "gender": doc.metadata.get("gender"),
+                            "location": doc.metadata.get("location"),
+                            "marital_status": doc.metadata.get("marital_status"),
+                            "family_size": doc.metadata.get("family_size")
+                        },
+                        "professional": {
+                            "job_title": doc.metadata.get("job_title"),
+                            "industry": doc.metadata.get("industry"),
+                            "income_level": doc.metadata.get("income_level"),
+                            "annual_income": doc.metadata.get("annual_income"),
+                            "years_experience": doc.metadata.get("years_experience"),
+                            "education": doc.metadata.get("education")
+                        },
+                        "health": {
+                            "conditions": health_conditions if health_conditions else ["None"],
+                            "lifestyle_factors": lifestyle_factors
+                        },
+                        "personal": {
+                            "hobbies": hobbies
+                        }
+                    }
+                    formatted_profiles.append(profile)
+
+                except Exception as e:
+                    # Skip malformed profiles
+                    continue
+
+            # Get total count for pagination info
+            total_count = len([doc for doc in all_docs if doc.metadata.get("data_type") == "synthetic_personal_profile"])
+
+            return {
+                "total_count": total_count,
+                "count": len(formatted_profiles),
+                "offset": offset,
+                "limit": limit,
+                "profiles": formatted_profiles
+            }
+
+        except Exception as e:
+            return {"error": f"Error retrieving profiles: {str(e)}", "profiles": []}
