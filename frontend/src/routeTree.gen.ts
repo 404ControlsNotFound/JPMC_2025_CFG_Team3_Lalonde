@@ -16,8 +16,18 @@ import { Route as TenantRouteImport } from './routes/tenant'
 import { Route as Request_formRouteImport } from './routes/request_form'
 import { Route as DemoRouteImport } from './routes/demo'
 
+const ResourceAllocationLazyRouteImport = createFileRoute(
+  '/resource-allocation',
+)()
 const IndexLazyRouteImport = createFileRoute('/')()
 
+const ResourceAllocationLazyRoute = ResourceAllocationLazyRouteImport.update({
+  id: '/resource-allocation',
+  path: '/resource-allocation',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/resource-allocation.lazy').then((d) => d.Route),
+)
 const Tenant_formRoute = Tenant_formRouteImport.update({
   id: '/tenant_form',
   path: '/tenant_form',
@@ -50,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/request_form': typeof Request_formRoute
   '/tenant': typeof TenantRoute
   '/tenant_form': typeof Tenant_formRoute
+  '/resource-allocation': typeof ResourceAllocationLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
@@ -57,6 +68,7 @@ export interface FileRoutesByTo {
   '/request_form': typeof Request_formRoute
   '/tenant': typeof TenantRoute
   '/tenant_form': typeof Tenant_formRoute
+  '/resource-allocation': typeof ResourceAllocationLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -65,13 +77,33 @@ export interface FileRoutesById {
   '/request_form': typeof Request_formRoute
   '/tenant': typeof TenantRoute
   '/tenant_form': typeof Tenant_formRoute
+  '/resource-allocation': typeof ResourceAllocationLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo' | '/request_form' | '/tenant' | '/tenant_form'
+  fullPaths:
+    | '/'
+    | '/demo'
+    | '/request_form'
+    | '/tenant'
+    | '/tenant_form'
+    | '/resource-allocation'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo' | '/request_form' | '/tenant' | '/tenant_form'
-  id: '__root__' | '/' | '/demo' | '/request_form' | '/tenant' | '/tenant_form'
+  to:
+    | '/'
+    | '/demo'
+    | '/request_form'
+    | '/tenant'
+    | '/tenant_form'
+    | '/resource-allocation'
+  id:
+    | '__root__'
+    | '/'
+    | '/demo'
+    | '/request_form'
+    | '/tenant'
+    | '/tenant_form'
+    | '/resource-allocation'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,10 +112,18 @@ export interface RootRouteChildren {
   Request_formRoute: typeof Request_formRoute
   TenantRoute: typeof TenantRoute
   Tenant_formRoute: typeof Tenant_formRoute
+  ResourceAllocationLazyRoute: typeof ResourceAllocationLazyRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/resource-allocation': {
+      id: '/resource-allocation'
+      path: '/resource-allocation'
+      fullPath: '/resource-allocation'
+      preLoaderRoute: typeof ResourceAllocationLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tenant_form': {
       id: '/tenant_form'
       path: '/tenant_form'
@@ -128,6 +168,7 @@ const rootRouteChildren: RootRouteChildren = {
   Request_formRoute: Request_formRoute,
   TenantRoute: TenantRoute,
   Tenant_formRoute: Tenant_formRoute,
+  ResourceAllocationLazyRoute: ResourceAllocationLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

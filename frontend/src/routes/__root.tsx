@@ -2,11 +2,9 @@ import React from "react";
 
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  createRootRouteWithContext,
-  Link,
-  Outlet,
-} from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+
+import { NewHopeIcon } from "@/components/new-hope-icon";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -25,19 +23,15 @@ export const Route = createRootRouteWithContext<{
 }>()({
   component: () => (
     <>
-      <div className="flex h-[60px] gap-4 bg-blue-800 p-4 text-white shadow-md">
-        <Link
-          to="/"
-          className="transition-colors hover:text-blue-200 [&.active]:font-bold"
-        >
-          Home
-        </Link>
-        <Link
-          to="/demo"
-          className="transition-colors hover:text-blue-200 [&.active]:font-bold"
-        >
-          Demo
-        </Link>
+      <div className="flex h-[60px] items-center justify-start gap-4 bg-blue-800 p-2 text-white shadow-md">
+        {/* Logo */}
+        <div className="flex items-center">
+          <NewHopeIcon size={60} />
+          <div>
+            <h1 className="text-lg font-bold text-blue-200">NEW HOPE</h1>
+            <p className="-mt-1 text-xs text-white">COMMUNITY SERVICES</p>
+          </div>
+        </div>
       </div>
       <main className="h-[calc(100vh-60px)] w-screen bg-gray-900 text-white">
         <Outlet />

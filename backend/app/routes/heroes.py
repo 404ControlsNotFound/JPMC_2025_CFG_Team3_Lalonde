@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.models.heros import Hero
-from app.db.config import SessionDep
+from app.db.database import SessionDep
 from fastapi import HTTPException, Query
 from sqlmodel import select
 from typing import Annotated
