@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from .db.config import init_db
 from contextlib import asynccontextmanager
-from .routes import heroes
+from .routes import heroes, rag
 
 
 @asynccontextmanager
@@ -13,6 +13,7 @@ app = FastAPI(lifespan=lifespan)
 
 api_router = APIRouter()
 api_router.include_router(heroes.router)
+api_router.include_router(rag.router)
 
 app.include_router(api_router)
 
