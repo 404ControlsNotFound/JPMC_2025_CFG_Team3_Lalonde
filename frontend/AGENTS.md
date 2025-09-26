@@ -126,49 +126,73 @@ interface ResourceAllocation {
 }
 ```
 
-## Development Priorities
+## Development Priorities - 12 Hour Hackathon
 
-### Phase 1: Core Dashboard (Week 1-2)
+### Phase 1: Setup & Core Structure (Hours 1-2)
 1. Set up routing structure with dashboard and chat tabs
-2. Create tenant data visualization with filtering
-3. Implement basic metrics display
-4. Build tenant profile cards with key information
+2. Create basic layout components (Header, Sidebar, Main content area)
+3. Set up mock data structure and sample tenant data
+4. Configure Tailwind styling system
 
-### Phase 2: AI Integration (Week 3)
-1. Integrate with backend recommendation API
-2. Build chat interface for AI interactions
-3. Implement resource recommendation display
-4. Add real-time data updates
+### Phase 2: Dashboard UI (Hours 3-6)
+1. Build tenant grid/list view with mock data
+2. Create tenant profile cards with key metrics
+3. Implement basic filtering UI (no complex logic needed)
+4. Add visual metrics dashboard with charts/stats
+5. Create calendar heatmap component (can use mock attendance data)
 
-### Phase 3: Forms & Data Collection (Week 4)
-1. Create tenant intake forms
-2. Implement form validation and submission
-3. Build admin interface for form management
-4. Add multilingual support
+### Phase 3: AI Chat Interface (Hours 7-9)
+1. Build chat UI components
+2. Mock AI responses for resource recommendations
+3. Create resource input form for recommendation criteria
+4. Display mock recommendation results in structured format
 
-### Phase 4: Advanced Features (Week 5+)
-1. Calendar heatmap implementation
-2. Advanced analytics and reporting
-3. Export capabilities
-4. Mobile responsiveness optimization
+### Phase 4: Forms & Polish (Hours 10-12)
+1. Create tenant request form page with basic validation
+2. Polish UI/UX and responsive design
+3. Add loading states and smooth transitions
+4. Demo preparation and final testing
 
-## Mock Data Requirements
+**Note**: All backend integration will be mocked with static data and simulated API responses for demonstration purposes.
 
-Create realistic mock data representing:
-- 50-100 diverse tenant profiles
-- Resource allocation history spanning 6-12 months
-- Event attendance records
-- Various welfare status indicators
-- Different engagement patterns (active, moderate, inactive residents)
+## Mock Data Requirements - Hackathon Focus
 
-## Backend Integration Points
+Create focused mock data for demonstration:
+- **20-30 diverse tenant profiles** with realistic Singapore names and demographics
+- **3-6 months of resource allocation history** per tenant
+- **Event attendance patterns** showing different engagement levels
+- **Variety of welfare statuses** (good, fair, poor, critical)
+- **Different tenant archetypes**:
+  - Highly engaged senior (attends most events)
+  - Working-age resident (limited availability)
+  - New tenant (minimal history)
+  - At-risk resident (requires attention)
+  - Regular recipient (frequent resource allocation)
 
-- **GET /api/tenants** - Fetch all tenant data with filtering
-- **GET /api/tenants/:id** - Get detailed tenant profile
-- **POST /api/recommendations** - Get AI recommendations for resource allocation
-- **POST /api/chat** - AI chat interactions
-- **POST /api/forms/intake** - Submit new tenant forms
-- **GET /api/analytics** - Dashboard metrics and KPIs
+**Mock API Responses**:
+- Simulated AI chat responses for common staff queries
+- Pre-built recommendation lists for different resource types
+- Sample form submission confirmations
+
+## Mock Backend Integration - Hackathon Version
+
+All API calls will be mocked with static responses:
+
+- **Mock Tenant Data**: JSON files with sample tenant profiles
+- **Mock AI Responses**: Pre-written chat responses and recommendation lists
+- **Mock Form Submissions**: Success/validation messages without actual backend
+- **Mock Analytics**: Static dashboard metrics and KPIs
+- **Local Storage**: For demonstrating state persistence (filters, form drafts)
+
+**Implementation**:
+```typescript
+// Use mock services instead of real API calls
+const mockTenantService = {
+  getTenants: () => Promise.resolve(mockTenantData),
+  getRecommendations: (criteria) => Promise.resolve(mockRecommendations),
+  submitForm: (data) => Promise.resolve({ success: true })
+};
+```
 
 ## Success Metrics
 
@@ -178,26 +202,35 @@ Create realistic mock data representing:
 4. **Engagement Tracking**: Better visibility into resident participation patterns
 5. **Decision Support**: AI-powered insights for resource allocation decisions
 
-## Getting Started
+## Getting Started - Hackathon Mode
 
-1. **Environment Setup**:
+1. **Quick Environment Setup**:
    ```bash
    cd frontend
    pnpm install
    pnpm dev
    ```
 
-2. **Development Workflow**:
-   - Use feature branches for new components
-   - Follow TypeScript strict mode
-   - Implement responsive design from the start
-   - Write unit tests for critical components
+2. **Rapid Development Workflow**:
+   - Work directly on main branch for speed
+   - Focus on UI components over complex logic
+   - Use Tailwind for quick styling
+   - Prioritize visual impact over perfect code structure
 
-3. **Design Guidelines**:
-   - Prioritize accessibility and ease of use
-   - Use consistent color coding for different data types
-   - Ensure mobile-friendly interface for field staff
-   - Implement clear visual hierarchy for data importance
+3. **Hackathon Design Guidelines**:
+   - **Speed over perfection**: Get working UI quickly
+   - **Visual impact**: Make it look professional and polished
+   - **Demo-ready**: Focus on features that show well in presentation
+   - **Responsive basics**: Ensure desktop and tablet views work
+   - **Color coding**: Use consistent colors for status indicators
+   - **Mock everything**: Don't get blocked by backend dependencies
+
+4. **Key Demo Features to Highlight**:
+   - Interactive tenant filtering and search
+   - Visual resource allocation tracking
+   - AI chat with realistic responses
+   - Professional dashboard aesthetics
+   - Smooth user experience transitions
 
 ## Future Enhancements
 
