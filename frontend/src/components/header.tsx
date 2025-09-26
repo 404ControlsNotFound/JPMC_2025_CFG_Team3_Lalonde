@@ -1,7 +1,5 @@
 import { Users } from "lucide-react";
 
-import { NewHopeIcon } from "./new-hope-icon";
-
 interface HeaderProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -10,16 +8,7 @@ interface HeaderProps {
 export function Header({ activeTab, onTabChange }: HeaderProps) {
   return (
     <header className="border-b border-gray-200 bg-white px-6 py-3 shadow-sm">
-      <div className="flex items-center space-x-8">
-        {/* Logo */}
-        <div className="flex items-center space-x-3 rounded-lg bg-white p-2 shadow-sm">
-          <NewHopeIcon size={60} />
-          <div>
-            <h1 className="text-lg font-bold text-blue-600">NEW HOPE</h1>
-            <p className="-mt-1 text-xs text-gray-500">COMMUNITY SERVICES</p>
-          </div>
-        </div>
-
+      <div className="flex items-center justify-center">
         {/* Navigation Tabs */}
         <div className="flex rounded-lg bg-gray-100 p-1">
           <button
