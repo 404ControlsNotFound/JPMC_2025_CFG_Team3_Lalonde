@@ -1,10 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, AlertCircle } from 'lucide-react';
-import { Message, ResourceAllocationRequest, ChatState } from '../types/resource-allocation';
-import { ragApi } from '../services/resource-allocation-api';
-import MessageBubble from './MessageBubble';
-import ChatInput from './ChatInput';
-import ResourceAllocationForm from './ResourceAllocationForm';
+import React, { useEffect, useRef, useState } from "react";
+
+import { AlertCircle, MessageCircle } from "lucide-react";
+
+import { ragApi } from "../services/resource-allocation-api";
+import {
+  ChatState,
+  Message,
+  ResourceAllocationRequest,
+} from "../types/resource-allocation";
+
+import ChatInput from "./ChatInput";
+import MessageBubble from "./MessageBubble";
+import ResourceAllocationForm from "./ResourceAllocationForm";
 
 const ChatInterface: React.FC = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -17,14 +24,18 @@ const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [chatState.messages]);
 
-  const addMessage = (content: string, role: 'user' | 'assistant', sourceDocuments?: any[]) => {
+  const addMessage = (
+    content: string,
+    role: "user" | "assistant",
+    sourceDocuments?: any[],
+  ) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       content,
@@ -33,7 +44,7 @@ const ChatInterface: React.FC = () => {
       sourceDocuments,
     };
 
-    setChatState(prev => ({
+    setChatState((prev) => ({
       ...prev,
       messages: [...prev.messages, newMessage],
     }));
@@ -41,41 +52,51 @@ const ChatInterface: React.FC = () => {
     return newMessage;
   };
 
-  const handleResourceAllocationSubmit = async (request: ResourceAllocationRequest) => {
+  const handleResourceAllocationSubmit = async (
+    request: ResourceAllocationRequest,
+  ) => {
     setError(null);
-    setChatState(prev => ({ ...prev, isLoading: true, currentRequest: request }));
+    setChatState((prev) => ({
+      ...prev,
+      isLoading: true,
+      currentRequest: request,
+    }));
 
     // Add user message showing the request
     const requestSummary = `Generate recommendations for:\n• Resource: ${request.resource_name}\n• Quantity: ${request.available_quantity}\n• Eligibility: ${request.eligibility_criteria}`;
-    addMessage(requestSummary, 'user');
+    addMessage(requestSummary, "user");
 
     try {
       const response = await ragApi.queryResourceAllocation(request);
-      addMessage(response.answer, 'assistant', response.source_documents);
+      addMessage(response.answer, "assistant", response.source_documents);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to get recommendations';
+      const errorMessage =
+        err.response?.data?.detail ||
+        err.message ||
+        "Failed to get recommendations";
       setError(errorMessage);
-      addMessage(`Error: ${errorMessage}`, 'assistant');
+      addMessage(`Error: ${errorMessage}`, "assistant");
     } finally {
-      setChatState(prev => ({ ...prev, isLoading: false }));
+      setChatState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
   const handleFollowUpMessage = async (message: string) => {
     setError(null);
-    setChatState(prev => ({ ...prev, isLoading: true }));
+    setChatState((prev) => ({ ...prev, isLoading: true }));
 
-    addMessage(message, 'user');
+    addMessage(message, "user");
 
     try {
       const response = await ragApi.query(message);
-      addMessage(response.answer, 'assistant', response.source_documents);
+      addMessage(response.answer, "assistant", response.source_documents);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to get response';
+      const errorMessage =
+        err.response?.data?.detail || err.message || "Failed to get response";
       setError(errorMessage);
-      addMessage(`Error: ${errorMessage}`, 'assistant');
+      addMessage(`Error: ${errorMessage}`, "assistant");
     } finally {
-      setChatState(prev => ({ ...prev, isLoading: false }));
+      setChatState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -97,18 +118,20 @@ const ChatInterface: React.FC = () => {
       />
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col">
         {/* Header */}
-        <div className="border-b border-gray-700 p-4 flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-gray-700 p-4">
           <div className="flex items-center gap-3">
-            <MessageCircle className="w-6 h-6 text-blue-400" />
-            <h1 className="text-xl font-semibold">Resource Allocation Assistant</h1>
+            <MessageCircle className="h-6 w-6 text-blue-400" />
+            <h1 className="text-xl font-semibold">
+              Resource Allocation Assistant
+            </h1>
           </div>
 
           {chatState.messages.length > 0 && (
             <button
               onClick={clearChat}
-              className="text-gray-400 hover:text-gray-100 text-sm px-3 py-1 rounded border border-gray-700 hover:border-gray-500 transition-colors"
+              className="rounded border border-gray-700 px-3 py-1 text-sm text-gray-400 transition-colors hover:border-gray-500 hover:text-gray-100"
             >
               Clear Chat
             </button>
@@ -118,13 +141,16 @@ const ChatInterface: React.FC = () => {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto">
           {chatState.messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h2 className="text-xl text-gray-100 mb-2">Welcome to Resource Allocation</h2>
-                <p className="text-gray-400 max-w-md">
-                  Fill out the form on the left to generate resource allocation recommendations.
-                  Then ask follow-up questions to refine and understand the recommendations.
+                <MessageCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <h2 className="mb-2 text-xl text-gray-100">
+                  Welcome to Resource Allocation
+                </h2>
+                <p className="max-w-md text-gray-400">
+                  Fill out the form on the left to generate resource allocation
+                  recommendations. Then ask follow-up questions to refine and
+                  understand the recommendations.
                 </p>
               </div>
             </div>
@@ -135,14 +161,16 @@ const ChatInterface: React.FC = () => {
               ))}
 
               {chatState.isLoading && (
-                <div className="flex gap-4 p-4 bg-gray-800/50">
+                <div className="flex gap-4 bg-gray-800/50 p-4">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-600">
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="text-gray-400">Analyzing profiles and generating recommendations...</div>
+                    <div className="text-gray-400">
+                      Analyzing profiles and generating recommendations...
+                    </div>
                   </div>
                 </div>
               )}
@@ -154,9 +182,9 @@ const ChatInterface: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mx-4 mb-4 p-3 bg-red-900/30 border border-red-500/50 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400" />
-            <span className="text-red-200 text-sm">{error}</span>
+          <div className="mx-4 mb-4 flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-900/30 p-3">
+            <AlertCircle className="h-4 w-4 text-red-400" />
+            <span className="text-sm text-red-200">{error}</span>
           </div>
         )}
 

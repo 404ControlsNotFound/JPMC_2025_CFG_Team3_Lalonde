@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
-import { Settings, Plus, Minus } from 'lucide-react';
-import { ResourceAllocationRequest } from '../types/resource-allocation';
+import React, { useState } from "react";
+
+import { Minus, Plus, Settings } from "lucide-react";
+
+import { ResourceAllocationRequest } from "../types/resource-allocation";
 
 interface ResourceAllocationFormProps {
   onSubmit: (request: ResourceAllocationRequest) => void;
   isLoading: boolean;
 }
 
-const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmit, isLoading }) => {
+const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({
+  onSubmit,
+  isLoading,
+}) => {
   const [formData, setFormData] = useState<ResourceAllocationRequest>({
-    resource_name: '',
+    resource_name: "",
     available_quantity: 1,
-    resource_description: '',
-    eligibility_criteria: '',
+    resource_description: "",
+    eligibility_criteria: "",
     priority_weights: {
       recent_recipients: 0.3,
       need_level: 0.7,
@@ -20,26 +25,29 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
     additional_filters: {},
   });
 
-  const [newWeightKey, setNewWeightKey] = useState('');
+  const [newWeightKey, setNewWeightKey] = useState("");
   const [newWeightValue, setNewWeightValue] = useState(0);
-  const [newFilterKey, setNewFilterKey] = useState('');
-  const [newFilterValue, setNewFilterValue] = useState('');
+  const [newFilterKey, setNewFilterKey] = useState("");
+  const [newFilterValue, setNewFilterValue] = useState("");
 
-  const handleInputChange = (field: keyof ResourceAllocationRequest, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field: keyof ResourceAllocationRequest,
+    value: any,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleWeightChange = (key: string, value: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      priority_weights: { ...prev.priority_weights, [key]: value }
+      priority_weights: { ...prev.priority_weights, [key]: value },
     }));
   };
 
   const addWeight = () => {
     if (newWeightKey && newWeightValue >= 0 && newWeightValue <= 1) {
       handleWeightChange(newWeightKey, newWeightValue);
-      setNewWeightKey('');
+      setNewWeightKey("");
       setNewWeightValue(0);
     }
   };
@@ -47,24 +55,27 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
   const removeWeight = (key: string) => {
     const weights = { ...formData.priority_weights };
     delete weights[key];
-    setFormData(prev => ({ ...prev, priority_weights: weights }));
+    setFormData((prev) => ({ ...prev, priority_weights: weights }));
   };
 
   const addFilter = () => {
     if (newFilterKey && newFilterValue) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        additional_filters: { ...prev.additional_filters, [newFilterKey]: newFilterValue }
+        additional_filters: {
+          ...prev.additional_filters,
+          [newFilterKey]: newFilterValue,
+        },
       }));
-      setNewFilterKey('');
-      setNewFilterValue('');
+      setNewFilterKey("");
+      setNewFilterValue("");
     }
   };
 
   const removeFilter = (key: string) => {
     const filters = { ...formData.additional_filters };
     delete filters[key];
-    setFormData(prev => ({ ...prev, additional_filters: filters }));
+    setFormData((prev) => ({ ...prev, additional_filters: filters }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,11 +84,11 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
   };
 
   return (
-    <div className="w-80 bg-gray-900 h-full flex flex-col border-r border-gray-700">
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center gap-2 mb-4">
-          <Settings className="w-5 h-5 text-gray-400" />
-          <h2 className="text-gray-100 font-semibold">Resource Allocation</h2>
+    <div className="flex h-full w-80 flex-col border-r border-gray-700 bg-gray-900">
+      <div className="border-b border-gray-700 p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <Settings className="h-5 w-5 text-gray-400" />
+          <h2 className="font-semibold text-gray-100">Resource Allocation</h2>
         </div>
       </div>
 
@@ -85,49 +96,70 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-3">
-            <h3 className="text-gray-100 text-sm font-medium">Basic Information</h3>
+            <h3 className="text-sm font-medium text-gray-100">
+              Basic Information
+            </h3>
 
             <div>
-              <label className="block text-gray-400 text-xs mb-1">Resource Name</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Resource Name
+              </label>
               <input
                 type="text"
                 value={formData.resource_name}
-                onChange={(e) => handleInputChange('resource_name', e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-gray-100 text-sm"
+                onChange={(e) =>
+                  handleInputChange("resource_name", e.target.value)
+                }
+                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-100"
                 placeholder="e.g., Emergency Food Assistance"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-400 text-xs mb-1">Available Quantity</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Available Quantity
+              </label>
               <input
                 type="number"
                 min="1"
                 value={formData.available_quantity}
-                onChange={(e) => handleInputChange('available_quantity', parseInt(e.target.value))}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-gray-100 text-sm"
+                onChange={(e) =>
+                  handleInputChange(
+                    "available_quantity",
+                    parseInt(e.target.value),
+                  )
+                }
+                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-100"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-400 text-xs mb-1">Description</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Description
+              </label>
               <textarea
                 value={formData.resource_description}
-                onChange={(e) => handleInputChange('resource_description', e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-gray-100 text-sm h-20 resize-none"
+                onChange={(e) =>
+                  handleInputChange("resource_description", e.target.value)
+                }
+                className="h-20 w-full resize-none rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-100"
                 placeholder="Describe what this resource provides..."
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-400 text-xs mb-1">Eligibility Criteria</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Eligibility Criteria
+              </label>
               <textarea
                 value={formData.eligibility_criteria}
-                onChange={(e) => handleInputChange('eligibility_criteria', e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-gray-100 text-sm h-20 resize-none"
+                onChange={(e) =>
+                  handleInputChange("eligibility_criteria", e.target.value)
+                }
+                className="h-20 w-full resize-none rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-gray-100"
                 placeholder="Who is eligible for this resource?"
                 required
               />
@@ -136,13 +168,17 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
 
           {/* Priority Weights */}
           <div className="space-y-3">
-            <h3 className="text-gray-100 text-sm font-medium">Priority Weights</h3>
+            <h3 className="text-sm font-medium text-gray-100">
+              Priority Weights
+            </h3>
 
             {Object.entries(formData.priority_weights).map(([key, value]) => (
               <div key={key} className="flex items-center gap-2">
                 <div className="flex-1">
-                  <label className="block text-gray-400 text-xs mb-1">
-                    {key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  <label className="mb-1 block text-xs text-gray-400">
+                    {key
+                      .replace("_", " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </label>
                   <input
                     type="range"
@@ -150,17 +186,21 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
                     max="1"
                     step="0.1"
                     value={value}
-                    onChange={(e) => handleWeightChange(key, parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      handleWeightChange(key, parseFloat(e.target.value))
+                    }
                     className="w-full"
                   />
-                  <div className="text-gray-400 text-xs mt-1">{(value * 100).toFixed(0)}%</div>
+                  <div className="mt-1 text-xs text-gray-400">
+                    {(value * 100).toFixed(0)}%
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeWeight(key)}
-                  className="text-red-400 hover:text-red-300 p-1"
+                  className="p-1 text-red-400 hover:text-red-300"
                 >
-                  <Minus className="w-4 h-4" />
+                  <Minus className="h-4 w-4" />
                 </button>
               </div>
             ))}
@@ -170,7 +210,7 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
                 type="text"
                 value={newWeightKey}
                 onChange={(e) => setNewWeightKey(e.target.value)}
-                className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-gray-100 text-xs"
+                className="flex-1 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-xs text-gray-100"
                 placeholder="Weight name"
               />
               <input
@@ -180,68 +220,78 @@ const ResourceAllocationForm: React.FC<ResourceAllocationFormProps> = ({ onSubmi
                 step="0.1"
                 value={newWeightValue}
                 onChange={(e) => setNewWeightValue(parseFloat(e.target.value))}
-                className="w-16 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-gray-100 text-xs"
+                className="w-16 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-xs text-gray-100"
               />
               <button
                 type="button"
                 onClick={addWeight}
-                className="text-green-400 hover:text-green-300 p-1"
+                className="p-1 text-green-400 hover:text-green-300"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
           </div>
 
           {/* Additional Filters */}
           <div className="space-y-3">
-            <h3 className="text-gray-100 text-sm font-medium">Additional Filters</h3>
+            <h3 className="text-sm font-medium text-gray-100">
+              Additional Filters
+            </h3>
 
-            {Object.entries(formData.additional_filters || {}).map(([key, value]) => (
-              <div key={key} className="flex items-center gap-2">
-                <div className="flex-1">
-                  <div className="text-gray-400 text-xs">{key}: {String(value)}</div>
+            {Object.entries(formData.additional_filters || {}).map(
+              ([key, value]) => (
+                <div key={key} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-400">
+                      {key}: {String(value)}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFilter(key)}
+                    className="p-1 text-red-400 hover:text-red-300"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeFilter(key)}
-                  className="text-red-400 hover:text-red-300 p-1"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+              ),
+            )}
 
             <div className="flex gap-2">
               <input
                 type="text"
                 value={newFilterKey}
                 onChange={(e) => setNewFilterKey(e.target.value)}
-                className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-gray-100 text-xs"
+                className="flex-1 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-xs text-gray-100"
                 placeholder="Filter name"
               />
               <input
                 type="text"
                 value={newFilterValue}
                 onChange={(e) => setNewFilterValue(e.target.value)}
-                className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-gray-100 text-xs"
+                className="flex-1 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-xs text-gray-100"
                 placeholder="Filter value"
               />
               <button
                 type="button"
                 onClick={addFilter}
-                className="text-green-400 hover:text-green-300 p-1"
+                className="p-1 text-green-400 hover:text-green-300"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={isLoading || !formData.resource_name || !formData.resource_description}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2 px-4 rounded text-sm font-medium transition-colors"
+            disabled={
+              isLoading ||
+              !formData.resource_name ||
+              !formData.resource_description
+            }
+            className="w-full rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-600"
           >
-            {isLoading ? 'Analyzing...' : 'Generate Recommendations'}
+            {isLoading ? "Analyzing..." : "Generate Recommendations"}
           </button>
         </form>
       </div>

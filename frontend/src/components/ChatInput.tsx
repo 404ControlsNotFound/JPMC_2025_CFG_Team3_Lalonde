@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+
+import { Send } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -10,16 +11,16 @@ interface ChatInputProps {
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   isLoading,
-  placeholder = "Ask a follow-up question or request clarification..."
+  placeholder = "Ask a follow-up question or request clarification...",
 }) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 200) + "px";
     }
   };
 
@@ -31,15 +32,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
     e.preventDefault();
     if (message.trim() && !isLoading) {
       onSendMessage(message.trim());
-      setMessage('');
+      setMessage("");
       if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = "auto";
       }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
@@ -47,8 +48,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="border-t border-gray-700 p-4">
-      <form onSubmit={handleSubmit} className="flex gap-3 items-end">
-        <div className="flex-1 relative">
+      <form onSubmit={handleSubmit} className="flex items-end gap-3">
+        <div className="relative flex-1">
           <textarea
             ref={textareaRef}
             value={message}
@@ -56,7 +57,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={isLoading}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 placeholder-text-secondary resize-none min-h-[44px] max-h-[200px] disabled:opacity-50 focus:outline-none focus:border-blue-500"
+            className="placeholder-text-secondary max-h-[200px] min-h-[44px] w-full resize-none rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-gray-100 focus:border-blue-500 focus:outline-none disabled:opacity-50"
             rows={1}
           />
         </div>
@@ -64,13 +65,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <button
           type="submit"
           disabled={!message.trim() || isLoading}
-          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors"
+          className="flex-shrink-0 rounded-lg bg-blue-600 p-3 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-600"
         >
-          <Send className="w-4 h-4" />
+          <Send className="h-4 w-4" />
         </button>
       </form>
 
-      <div className="mt-2 text-gray-400 text-xs text-center">
+      <div className="mt-2 text-center text-xs text-gray-400">
         Press Enter to send, Shift+Enter for new line
       </div>
     </div>
