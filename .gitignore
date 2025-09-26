@@ -234,3 +234,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Team-3 directory (contains server details and SSH keys)
+Team-3/
