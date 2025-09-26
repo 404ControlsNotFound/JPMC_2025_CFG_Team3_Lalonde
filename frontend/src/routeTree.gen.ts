@@ -11,10 +11,28 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as Tenant_formRouteImport } from './routes/tenant_form'
+import { Route as TenantRouteImport } from './routes/tenant'
+import { Route as Request_formRouteImport } from './routes/request_form'
 import { Route as DemoRouteImport } from './routes/demo'
 
 const IndexLazyRouteImport = createFileRoute('/')()
 
+const Tenant_formRoute = Tenant_formRouteImport.update({
+  id: '/tenant_form',
+  path: '/tenant_form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TenantRoute = TenantRouteImport.update({
+  id: '/tenant',
+  path: '/tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Request_formRoute = Request_formRouteImport.update({
+  id: '/request_form',
+  path: '/request_form',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -29,31 +47,64 @@ const IndexLazyRoute = IndexLazyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/demo': typeof DemoRoute
+  '/request_form': typeof Request_formRoute
+  '/tenant': typeof TenantRoute
+  '/tenant_form': typeof Tenant_formRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/demo': typeof DemoRoute
+  '/request_form': typeof Request_formRoute
+  '/tenant': typeof TenantRoute
+  '/tenant_form': typeof Tenant_formRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexLazyRoute
   '/demo': typeof DemoRoute
+  '/request_form': typeof Request_formRoute
+  '/tenant': typeof TenantRoute
+  '/tenant_form': typeof Tenant_formRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo'
+  fullPaths: '/' | '/demo' | '/request_form' | '/tenant' | '/tenant_form'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo'
-  id: '__root__' | '/' | '/demo'
+  to: '/' | '/demo' | '/request_form' | '/tenant' | '/tenant_form'
+  id: '__root__' | '/' | '/demo' | '/request_form' | '/tenant' | '/tenant_form'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   DemoRoute: typeof DemoRoute
+  Request_formRoute: typeof Request_formRoute
+  TenantRoute: typeof TenantRoute
+  Tenant_formRoute: typeof Tenant_formRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tenant_form': {
+      id: '/tenant_form'
+      path: '/tenant_form'
+      fullPath: '/tenant_form'
+      preLoaderRoute: typeof Tenant_formRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tenant': {
+      id: '/tenant'
+      path: '/tenant'
+      fullPath: '/tenant'
+      preLoaderRoute: typeof TenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request_form': {
+      id: '/request_form'
+      path: '/request_form'
+      fullPath: '/request_form'
+      preLoaderRoute: typeof Request_formRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo': {
       id: '/demo'
       path: '/demo'
@@ -74,6 +125,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   DemoRoute: DemoRoute,
+  Request_formRoute: Request_formRoute,
+  TenantRoute: TenantRoute,
+  Tenant_formRoute: Tenant_formRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
