@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   // ESLint and autofix settings
   "eslint.workingDirectories": ["frontend"],
   "eslint.validate": [
@@ -53,3 +54,8 @@
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true
 }
+=======
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
+}
+>>>>>>> 4974a45 (add case logs)

@@ -1,10 +1,9 @@
 import random
-from typing import List, Dict, Any
-from dataclasses import dataclass
-import json
+from typing import List
+from pydantic import BaseModel, ConfigDict, field_serializer
+from datetime import datetime
 
-@dataclass
-class PersonProfile:
+class PersonProfile(BaseModel):
     name: str
     age: int
     gender: str
@@ -20,6 +19,17 @@ class PersonProfile:
     hobbies: List[str]
     family_size: int
     years_experience: int
+    case_logs: dict[datetime, str]
+
+    model_config = ConfigDict(extra="ignore", arbitrary_types_allowed=True)
+    
+    @field_serializer('case_logs')
+    def serialize_case_logs(self, case_logs: dict[datetime, str]) -> dict[int, str]:
+        """Convert datetime keys to timestamps for JSON serialization"""
+        return {
+            int(dt.timestamp()): log_entry 
+            for dt, log_entry in case_logs.items()
+        }
 
     def to_document_content(self) -> str:
         """Convert profile to document text for vector storage"""
@@ -52,29 +62,11 @@ Health Information:
 Personal Interests:
 - Hobbies: {hobbies_text}
 
+Case Logs:
+{''.join([f"- {dt.strftime('%Y-%m-%d')}: {log_entry}\n" for dt, log_entry in sorted(self.case_logs.items())]) if self.case_logs else "No case logs available."}
+
 Additional Context: This person lives in {self.location}, works as a {self.job_title} in the {self.industry} industry, and has {self.years_experience} years of professional experience. Their income level is considered {self.income_level} with an annual salary of ${self.annual_income:,}.
         """.strip()
-
-    def to_metadata(self) -> Dict[str, Any]:
-        """Convert profile to metadata for vector storage"""
-        return {
-            "person_id": self.name.lower().replace(" ", "_"),
-            "age": self.age,
-            "gender": self.gender,
-            "location": self.location,
-            "job_title": self.job_title,
-            "industry": self.industry,
-            "income_level": self.income_level,
-            "annual_income": self.annual_income,
-            "education": self.education,
-            "marital_status": self.marital_status,
-            "family_size": self.family_size,
-            "years_experience": self.years_experience,
-            "health_conditions": json.dumps(self.health_conditions),
-            "lifestyle_factors": json.dumps(self.lifestyle_factors),
-            "hobbies": json.dumps(self.hobbies),
-            "data_type": "synthetic_personal_profile"
-        }
 
 class FakeDataGenerator:
     def __init__(self):
@@ -199,6 +191,74 @@ class FakeDataGenerator:
         # Hobbies (1-5 hobbies)
         num_hobbies = random.randint(1, 5)
         hobbies = random.sample(self.hobbies, num_hobbies)
+        
+        # Generate case logs (random historical records)
+        case_logs = {}
+        num_cases = random.randint(0, 5)  # 0-5 case entries
+        
+        if num_cases > 0:
+            from datetime import datetime, timedelta
+            
+            case_log_data = [
+                """
+                **Initial Intake and Assessment (9/25/2025):**
+                Client (Mr. John D.) presented with chief complaint of increasing **social isolation** since the passing of his spouse 6 months ago. He appears physically frail but alert. Reports difficulty with meal preparation and managing household chores. Financial situation appears stable, but he's unaware of local senior resources.
+                *Action: Scheduled a follow-up home visit next week. Provided pamphlets for Meals on Wheels and the local Senior Center activities.*
+                """,
+                """
+                **Reported Feelings of Isolation and Loneliness (10/02/2025):**
+                During the home visit, Mr. D. expressed feeling profoundly **lonely** and stated, "The days are too long." He spends most of the day watching television. He has limited mobility and relies on a cane. Environment is tidy. No immediate safety risks observed.
+                *Action: Completed referral form for the **Friendly Visitor Program**. Contacted local church to inquire about their weekly luncheon and transportation options.*
+                """,
+                """
+                **Referral to Community Seniors Program (10/09/2025):**
+                Confirmed Mr. D.'s enrollment in the **Senior Center's** weekly book club and a light exercise class starting on Thursday. He voiced initial reluctance but agreed to try one session. Transportation will be provided by the center's shuttle service.
+                *Action: Confirmed shuttle pick-up time. Set calendar reminder for 3 days prior to the first session to offer an encouraging check-in call.*
+                """,
+                """
+                **Noted Signs of Early-Stage Cognitive Decline (10/23/2025):**
+                During a check-in call, Mr. D. was confused about the day of the week and repeated a story told earlier in the conversation. He had forgotten to take his morning blood pressure medication. Daughter (Ms. Sarah D.) expressed concern over recent confusion.
+                *Action: Suggested Ms. D. schedule an appointment with the primary care physician (PCP) for a **Memory Screening**. Provided information on organizing medication with a pill box.*
+                """,
+                """
+                **Discussion of Financial Difficulties (11/06/2025):**
+                Mr. D. disclosed that his monthly utility bills have become difficult to manage, cutting into his grocery budget. He is worried about heating costs this winter. He is living solely on his Social Security benefit.
+                *Action: Helped client complete the application for the **Low Income Home Energy Assistance Program (LIHEAP)**. Scheduled an appointment to review eligibility for supplementary **SNAP benefits** (food stamps).*
+                """,
+                """
+                **Follow-up Regarding Medication Adherence (11/20/2025):**
+                Daughter reported that Mr. D.'s new pill organizer has helped significantly; no missed doses this week. PCP confirmed mild cognitive impairment but no immediate need for institutional care.
+                *Action: Reinforced the importance of using the pill box. Will monitor medication management during subsequent visits.*
+                """,
+                """
+                **Facilitated Family Mediation Session (12/04/2025):**
+                Meeting held with Mr. D., his daughter, and his son regarding escalating tension over who will take primary responsibility for care. Daughter is feeling burned out. Son is geographically distant but willing to provide financial support.
+                *Action: Established a rotation schedule for caregiving tasks. Discussed the option of **Respite Care** for the daughter. Agreed to revisit the plan in 30 days.*
+                """,
+                """
+                **Arrangement for Home Safety Assessment (12/18/2025):**
+                Noted several loose rugs and a dim hallway light during the last visit, posing a **fall risk**. Client initially resisted changes, viewing them as 'unnecessary fuss.'
+                *Action: Contacted the Occupational Therapist (OT) from the local hospital to schedule a professional **Home Safety Evaluation**. Secured a grant application for the installation of essential grab bars in the bathroom.*
+                """,
+                """
+                **Contacted Adult Protective Services (01/08/2026):**
+                Received an anonymous call alleging that the client's caregiver was verbally abusive and withholding necessary hygiene assistance. No visible physical injuries. Client seemed reluctant to talk about the caregiver.
+                *Action: Filed a report with **Adult Protective Services (APS)** due to potential neglect/abuse concern. Immediately began identifying temporary, alternative care options for the client during the investigation period.*
+                """,
+                """
+                **Scheduled Benefit Review and Advocacy (01/22/2026):**
+                The LIHEAP application was denied due to a paperwork error (missing signature). Client is overwhelmed by complex forms and letters.
+                *Action: Rescheduled an in-person meeting to meticulously review all denied claims. Contacted the agency to clarify the specific denial reason and will act as the client's advocate to **re-submit the LIHEAP application** and ensure all entitlements are fully accessed.*
+                """
+            ]
+            
+            # Generate dates going back up to 2 years
+            for _ in range(num_cases):
+                days_back = random.randint(1, 730)  # Up to 2 years back
+                case_date = datetime.now() - timedelta(days=days_back)
+                case_log = random.choice(case_log_data)
+                case_logs[case_date] = case_log
+                
 
         return PersonProfile(
             name=name,
@@ -215,7 +275,8 @@ class FakeDataGenerator:
             lifestyle_factors=lifestyle_factors,
             hobbies=hobbies,
             family_size=family_size,
-            years_experience=years_experience
+            years_experience=years_experience,
+            case_logs=case_logs
         )
 
     def generate_profiles(self, count: int = 100) -> List[PersonProfile]:

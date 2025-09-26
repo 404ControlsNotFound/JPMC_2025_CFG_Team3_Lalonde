@@ -1,12 +1,11 @@
-import os
-import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-from .database import get_vector_store, init_database
 from .fake_data_generator import FakeDataGenerator, PersonProfile
+from app.db.vector_store import get_vector_store
+import json
 
 class DocumentProcessor:
     def __init__(self):
@@ -29,7 +28,7 @@ class DocumentProcessor:
     def process_and_store_document(self, file_path: str) -> str:
         try:
             if self.vector_store is None:
-                self.vector_store = init_database()
+                self.vector_store = get_vector_store()
 
             documents = self.load_pdf(file_path)
 
@@ -66,13 +65,13 @@ class DocumentProcessor:
         """Process and store personal profile data in vector store"""
         try:
             if self.vector_store is None:
-                self.vector_store = init_database()
+                self.vector_store = get_vector_store()
 
             documents = []
             for profile in profiles:
                 doc = Document(
                     page_content=profile.to_document_content(),
-                    metadata=profile.to_metadata()
+                    metadata=profile.model_dump()
                 )
                 documents.append(doc)
 
@@ -99,7 +98,7 @@ class DocumentProcessor:
 
             # Note: This is a simplified approach. In production, you'd want more sophisticated clearing
             # For now, we'll reinitialize the vector store
-            self.vector_store = init_database()
+            self.vector_store = get_vector_store()
             return "Vector store cleared successfully"
         except Exception as e:
             return f"Error clearing vector store: {str(e)}"
