@@ -1,8 +1,7 @@
-import React from "react";
-
 import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Link, Outlet } from "@tanstack/react-router";
+import React from "react";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -22,7 +21,7 @@ export const Route = createRootRouteWithContext<{
   component: () => (
     <>
       <div className="flex h-[60px] gap-4 bg-blue-800 p-2 text-white shadow-md">
-        {/* <Link
+        <Link
           to="/"
           className="transition-colors hover:text-blue-200 [&.active]:font-bold"
         >
